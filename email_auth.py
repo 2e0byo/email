@@ -99,6 +99,8 @@ class Office365Credentials(Credentials):
         webbrowser.open(url)
         server = HTTPServer(("", PORT), Handler)
         server.serve_forever()
+        if not authcode:
+            raise Exception("Failed to get authcode.")
         token = app.acquire_token_by_authorization_code(
             authcode,
             list(self.SCOPES),  # has stupid broken isinstance test internally.
