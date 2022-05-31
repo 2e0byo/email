@@ -25,9 +25,9 @@ For the client id/secret we pretend to be thunderbird.
 pip install -r requirements.txt
 ```
 Put `email.py` somewhere sensible.  Then create yourself a `oauth.py` following
-the model.
+the model in `oauth_example.py`.
 
-## Offlineimap
+## Offlineimap (or library usage)
 
 In my `~/.offlineimaprc` I have:
 
@@ -36,7 +36,32 @@ In my `~/.offlineimaprc` I have:
 pythonfile = ~/code/email/oauth.py
 remoteuser = ...
 auth_mechanisms = XOAUTH2
-oauth2_access_token_eval = Gmail_2e0byo.get_authentication_token()
+oauth2_access_token_eval = Gmail_2e0byo.authentication_token()
+```
+
+## Emacs (or cli usage)
+
+In my `init.el` I have:
+
+```elisp
+(require 'oauth2)
+
+(cl-defmethod smtpmail-try-auth-method
+  (process (_mech (eql xoauth2)) user password)
+  (smtpmail-command-or-throw
+   process
+   (concat "AUTH XOAUTH2 " (shell-command-to-string (concat "python ~/code/email/oauth.py --authstr " user)))))
+
+
+(add-to-list 'smtpmail-auth-supported 'xoauth2)
+```
+
+The complete cli:
+
+```bash
+python oauth.py USER@ACCOUNT # get and print authentication token
+python oauth.py --authstr USER@ACCOUNT # get and print base64 encoded str for xoauth2
+python oauth.py --refresh USER@ACCOUNT USER2@ACCOUNT2 "# update refresh token for user.
 ```
 
 # Credits

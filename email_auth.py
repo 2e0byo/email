@@ -1,21 +1,25 @@
 import webbrowser
 from abc import ABC, abstractmethod
-from collections import namedtuple
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from threading import Thread
 from urllib.parse import parse_qs, urlparse
+from base64 import b64encode
 
 import google_auth_oauthlib as gauth
 import msal
 import requests
 
-Token = namedtuple("Token", "token,id,secret")
-
 
 class Credentials(ABC):
-    def __init__(self, token_file: Path):
+    def __init__(self, token_file: Path, email: str, user: str = None):
         self.token_file = token_file
+        self._user = user
+        self.email = email
+
+    @property
+    def user(self):
+        return self._user if self._user else self.email
 
     @abstractmethod
     def refresh_token(self) -> str:
@@ -27,7 +31,7 @@ class Credentials(ABC):
             f.write(token)
         self.token_file.chmod(0o600)
 
-    def authentication_token(self) -> Token:
+    def authentication_token(self) -> str:
         with self.token_file.open() as f:
             token = f.read()
         resp = requests.post(
@@ -41,19 +45,13 @@ class Credentials(ABC):
         )
         if not resp.status_code == 200:
             raise Exception("Unable authenticate: " + resp.text)
-        return Token(resp.json()["access_token"], self.ID, self.SECRET)
+        return resp.json()["access_token"]
 
-    def get_authentication_token(self):
-        """Convenience method for libraries."""
-        return self.authentication_token().token
-
-    def get_client_id(self):
-        """Convenience method for libraries."""
-        return self.ID
-
-    def get_client_secret(self):
-        """Convenience method for libraries."""
-        return self.SECRET
+    def xoauth_string(self) -> str:
+        """base64 encoded string all ready for dropping into connection."""
+        return b64encode(
+            f"user={self.user}\1auth=Bearer {self.authentication_token()}\1\1".encode()
+        ).decode()
 
 
 class GmailCredentials(Credentials):
