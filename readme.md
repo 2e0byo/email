@@ -8,6 +8,10 @@ This library provides a basic XOauth2 flow for email which handles
 
 I use it with offlineimap and Emacs.
 
+Unlike various other offerings across he web, this is designed to be a single
+source of truth for email authentication. Implementing a new provider is as
+simple as subclassing and handling getting the refresh token.
+
 The refresh token is stored in a file, with permissions set to 600.  *It can be
 read by any process running as your user (and by root)*.  Personally this
 doesn't bother me: email isn't secure anyway.  You might want to subclass/edit
@@ -38,3 +42,8 @@ oauth2_client_id_eval = Gmail_2e0byo.ID
 oauth2_client_secret_eval = Gmail_2e0byo.SECRET
 ```
 
+# Credits
+The office365 was rewritten from [M-365](https://github.com/UvA-FNWI/M365-IMAP).
+Although I would have used `bottle`... but bottle 0.13 *still* isn't out, so the
+server can't cleanly be stopped from a request... The differences are mostly
+stylistic. The gmail code is straight from the docs.
