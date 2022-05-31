@@ -43,6 +43,18 @@ class Credentials(ABC):
             raise Exception("Unable authenticate: " + resp.text)
         return Token(resp.json()["access_token"], self.ID, self.SECRET)
 
+    def get_authentication_token(self):
+        """Convenience method for libraries."""
+        return self.authentication_token().token
+
+    def get_client_id(self):
+        """Convenience method for libraries."""
+        return self.ID
+
+    def get_client_secret(self):
+        """Convenience method for libraries."""
+        return self.SECRET
+
 
 class GmailCredentials(Credentials):
     ID = "406964657835-aq8lmia8j95dhl1a2bvharmfk3t1hgqj.apps.googleusercontent.com"
