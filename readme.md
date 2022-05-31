@@ -17,6 +17,14 @@ read by any process running as your user (and by root)*.  Personally this
 doesn't bother me: email isn't secure anyway.  You might want to subclass/edit
 and store in something like a keyring.
 
+Microsoft accounts, for some annoying reason, use a 'display' email (frequently
+`first.last@company.suffix`) but require authentication with a 'machine' email
+(`asdf67@company.suffix`). Or at any rate they do in Durham. This information is
+stored on the Class if provided, so we can generate the xoauth2 str reliably. We
+could just as easily do this in the client (indeed, I did), but the idea is to
+be the sole source of truth, not just another step in an already overcomplicated
+process.
+
 For the client id/secret we pretend to be thunderbird.
 
 ## Installation
