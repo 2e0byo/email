@@ -35,11 +35,8 @@ In my `~/.offlineimaprc` I have:
 [Respository RemoteGmail]
 pythonfile = ~/code/email/oauth.py
 remoteuser = ...
-oauth2_access_token_eval = Gmail_2e0byo.get_authentication_token()
 auth_mechanisms = XOAUTH2
-oauth2_request_url_eval =  Gmail_2e0byo.TOKEN_URL
-oauth2_client_id_eval = Gmail_2e0byo.ID
-oauth2_client_secret_eval = Gmail_2e0byo.SECRET
+oauth2_access_token_eval = Gmail_2e0byo.get_authentication_token()
 ```
 
 # Credits
