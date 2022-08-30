@@ -30,7 +30,7 @@ if __name__ == "__main__":
     for k in args.account:
         account = ACCOUNTS[k]
         if args.refresh:
-            account.refresh_token()
+            account.write_refresh_token()
         elif args.authstr:
             print(account.xoauth_string())
         else:
