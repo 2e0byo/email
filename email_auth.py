@@ -1,10 +1,10 @@
 import webbrowser
 from abc import ABC, abstractmethod
+from base64 import b64encode
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from threading import Thread
 from urllib.parse import parse_qs, urlparse
-from base64 import b64encode
 
 import google_auth_oauthlib as gauth
 import msal
