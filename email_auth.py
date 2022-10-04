@@ -66,27 +66,13 @@ class GmailCredentials(Credentials):
         ).refresh_token
 
 
-class Office365Credentials(Credentials):
-    ID = "08162f7c-0fd2-4200-a84a-f25a4db0b584"
-    SECRET = "TxRBilcHdC6WGBee]fs?QR:SJ8nI[g82"
-    SCOPES = (
-        "https://outlook.office.com/IMAP.AccessAsUser.All",
-        "https://outlook.office.com/SMTP.Send",
-    )
-    TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
-
-    def refresh_token(self) -> str:
-        authcode = None
-
-        PORT = 7598
-        redirect_uri = f"http://localhost:{PORT}/"
-
+class WebbrowserTokenMixin:
+    @staticmethod
+    def get_response_url(url, port):
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
-                parts = urlparse(self.path)
-                query = parse_qs(parts.query)
-                nonlocal authcode
-                authcode = query.get("code")
+                nonlocal url
+                url = self.path
                 self.send_response(200)
                 self.send_header("Content-Type", "text/plain")
                 self.end_headers()
@@ -94,13 +80,33 @@ class Office365Credentials(Credentials):
                 nonlocal server
                 Thread(target=lambda: server.shutdown()).start()
 
+        webbrowser.open(url)
+        server = HTTPServer(("", port), Handler)
+        server.serve_forever()
+        return url
+
+    def get_authcode(self, url, port):
+        resp_url = self.get_response_url(url, port)
+        parts = urlparse(resp_url)
+        query = parse_qs(parts.query)
+        return query["code"]
+
+
+class Office365Credentials(Credentials, WebbrowserTokenMixin):
+    ID = "08162f7c-0fd2-4200-a84a-f25a4db0b584"
+    SECRET = "TxRBilcHdC6WGBee]fs?QR:SJ8nI[g82"
+    SCOPES = (
+        "https://outlook.office365.com/IMAP.AccessAsUser.All",
+        "https://outlook.office365.com/SMTP.Send",
+    )
+    TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+
+    def refresh_token(self) -> str:
+        PORT = 7598
+        redirect_uri = f"http://localhost:{PORT}/"
         app = msal.ConfidentialClientApplication(self.ID, self.SECRET)
         url = app.get_authorization_request_url(self.SCOPES, redirect_uri=redirect_uri)
-        webbrowser.open(url)
-        server = HTTPServer(("", PORT), Handler)
-        server.serve_forever()
-        if not authcode:
-            raise Exception("Failed to get authcode.")
+        authcode = self.get_authcode(url, PORT)
         token = app.acquire_token_by_authorization_code(
             authcode,
             list(self.SCOPES),  # has stupid broken isinstance test internally.
