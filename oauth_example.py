@@ -7,19 +7,19 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from email_auth import GmailCredentials, Office365Credentials
 
-Gmail_2e0byo = GmailCredentials(Path("~/.pass/2e0byo").expanduser(), "2e0byo@gmail.com")
-Wombat = GmailCredentials(
-    Path("~/.pass/Wombat").expanduser(), "jmwombat122@googlemail.com"
-)
-Durham = Office365Credentials(
-    Path("~/.pass/Durham").expanduser(),
-    "john.morris@durham.ac.uk",
-    "lntq46@durham.ac.uk",
+Gmail1 = GmailCredentials(Path("~/.pass/account1").expanduser(), "one@gmail.com")
+Gmail2 = GmailCredentials(Path("~/.pass/account2").expanduser(), "two@gmail.com")
+Microsoft = Office365Credentials(
+    Path("~/.pass/Microsoft").expanduser(),
+    "first.last@uni.ac.uk",
+    "abcd45@uni.ac.uk",
 )
 
 
-ACCOUNTS = {x.user: x for x in {Gmail_2e0byo, Wombat, Durham}}
-ACCOUNTS |= {x.email: x for x in {Gmail_2e0byo, Wombat, Durham}}
+# accounts by username
+ACCOUNTS = {x.user: x for x in {Gmail1, Gmail2, Microsoft}}
+# accounts by email, if different
+ACCOUNTS |= {x.email: x for x in {Gmail1, Gmail2, Microsoft}}
 
 if __name__ == "__main__":
     parser = ArgumentParser()

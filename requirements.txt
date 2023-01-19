@@ -1,3 +1,4 @@
 msal
 oauth2
 google-auth-oauthlib
+O365

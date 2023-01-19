@@ -35,6 +35,18 @@ pip install -r requirements.txt
 Put `email.py` somewhere sensible.  Then create yourself a `oauth.py` following
 the model in `oauth_example.py`.
 
+## Initial Setup
+Make sure your `.pass` exists and has the right permissions.  Run `python
+oauth.py USER@ACCOUNT --refresh` for every account defined in `oauth.py`.  This
+will fire up a web browser (run with `BROWSER=/path/to/browser` to change) and
+direct you to your usual company login portal, after which it will extract the
+refresh token and save it to disk.
+
+You can pass all the accounts in at once, in which case they will be processed
+sequentially.  Warning!  If your browser keeps you logged in---which it probably
+will---and you have multiple accounts from the same provider, this may not do
+what you think.
+
 ## Offlineimap (or library usage)
 
 In my `~/.offlineimaprc` I have:
@@ -44,8 +56,10 @@ In my `~/.offlineimaprc` I have:
 pythonfile = ~/code/email/oauth.py
 remoteuser = ...
 auth_mechanisms = XOAUTH2
-oauth2_access_token_eval = Gmail_2e0byo.authentication_token()
+oauth2_access_token_eval = Gmail1.authentication_token()
 ```
+
+and so on.
 
 ## Emacs (or cli usage)
 
