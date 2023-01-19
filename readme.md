@@ -83,7 +83,7 @@ The complete cli:
 ```bash
 python oauth.py USER@ACCOUNT # get and print authentication token
 python oauth.py --authstr USER@ACCOUNT # get and print base64 encoded str for xoauth2
-python oauth.py --refresh USER@ACCOUNT USER2@ACCOUNT2 "# update refresh token for user.
+python oauth.py --refresh USER@ACCOUNT USER2@ACCOUNT2 # update refresh token for user.
 ```
 
 # Credits
