@@ -50,7 +50,6 @@ class AuthenticatableCredentials(Credentials):
             self.TOKEN_URL,
             data={
                 "client_id": self.ID,
-                "client_secret": self.SECRET,
                 "refresh_token": token,
                 "grant_type": "refresh_token",
             },
