@@ -1,3 +1,4 @@
+import ssl
 import webbrowser
 from abc import ABC, abstractmethod
 from base64 import b64encode
@@ -98,9 +99,20 @@ class WebbrowserTokenMixin:
                 nonlocal server
                 Thread(target=lambda: server.shutdown()).start()
 
-        webbrowser.open(url)
         server = HTTPServer(("", port), Handler)
-        server.serve_forever()
+        root = Path(__file__).parent
+        keyf, certf = root / "server.key", root / "server.cert"
+        assert keyf.exists() and certf.exists()
+        server.socket = ssl.wrap_socket(
+            server.socket,
+            keyfile=keyf,
+            certfile=certf,
+            server_side=True,
+        )
+        t = Thread(target=server.serve_forever)
+        t.start()
+        webbrowser.open(url)
+        t.join()
         return url
 
     def get_authcode(self, url, port):
@@ -114,8 +126,7 @@ class WebbrowserTokenMixin:
 class Office365Credentials(AuthenticatableCredentials, WebbrowserTokenMixin):
     """Credentials for Office365 accounts."""
 
-    ID = "08162f7c-0fd2-4200-a84a-f25a4db0b584"
-    SECRET = "TxRBilcHdC6WGBee]fs?QR:SJ8nI[g82"
+    ID = "9e5f94bc-e8a4-4e73-b8be-63364c29d753"
     SCOPES = (
         "https://outlook.office365.com/IMAP.AccessAsUser.All",
         "https://outlook.office365.com/SMTP.Send",
@@ -125,8 +136,8 @@ class Office365Credentials(AuthenticatableCredentials, WebbrowserTokenMixin):
     def refresh_token(self) -> str:
         """Get a new refresh token."""
         PORT = 7598
-        redirect_uri = f"http://localhost:{PORT}/"
-        app = msal.ConfidentialClientApplication(self.ID, self.SECRET)
+        redirect_uri = f"https://localhost:{PORT}/"
+        app = msal.ConfidentialClientApplication(self.ID)
         url = app.get_authorization_request_url(self.SCOPES, redirect_uri=redirect_uri)
         authcode = self.get_authcode(url, PORT)
         token = app.acquire_token_by_authorization_code(
