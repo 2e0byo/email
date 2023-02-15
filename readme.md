@@ -8,7 +8,7 @@ This library provides a basic XOauth2 flow for email which handles
 
 I use it with offlineimap and Emacs.
 
-Unlike various other offerings across he web, this is designed to be a single
+Unlike various other offerings across the web, this is designed to be a single
 source of truth for email authentication. Implementing a new provider is as
 simple as subclassing and handling getting the refresh token.
 
@@ -83,7 +83,7 @@ The complete cli:
 ```bash
 python oauth.py USER@ACCOUNT # get and print authentication token
 python oauth.py --authstr USER@ACCOUNT # get and print base64 encoded str for xoauth2
-python oauth.py --refresh USER@ACCOUNT USER2@ACCOUNT2 "# update refresh token for user.
+python oauth.py --refresh USER@ACCOUNT USER2@ACCOUNT2 # update refresh token for user.
 ```
 
 # Credits
