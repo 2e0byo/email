@@ -46,13 +46,17 @@ class AuthenticatableCredentials(Credentials):
         """Get a new authentication token."""
         with self.token_file.open() as f:
             token = f.read()
+
+        data = {
+            "client_id": self.ID,
+            "refresh_token": token,
+            "grant_type": "refresh_token",
+        }
+        if getattr(self, "SECRET", None):
+            data["client_secret"] = self.SECRET
         resp = requests.post(
             self.TOKEN_URL,
-            data={
-                "client_id": self.ID,
-                "refresh_token": token,
-                "grant_type": "refresh_token",
-            },
+            data=data,
         )
         if not resp.status_code == 200:
             raise Exception("Unable authenticate: " + resp.text)
