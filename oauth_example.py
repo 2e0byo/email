@@ -21,7 +21,7 @@ ACCOUNTS = {x.user: x for x in {Gmail1, Gmail2, Microsoft}}
 # accounts by email, if different
 ACCOUNTS |= {x.email: x for x in {Gmail1, Gmail2, Microsoft}}
 
-if __name__ == "__main__":
+def main()  -> None:
     parser = ArgumentParser()
     parser.add_argument("account", nargs="*")
     parser.add_argument("--refresh", help="Refresh token", action="store_true")
@@ -35,3 +35,6 @@ if __name__ == "__main__":
             print(account.xoauth_string())
         else:
             print(account.authentication_token())
+
+if __name__ == "__main__":
+    main()
