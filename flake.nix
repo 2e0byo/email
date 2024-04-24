@@ -1,44 +1,47 @@
 {
-  description = "Email auth management";
+  description = "Application packaged using poetry2nix";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    poetry2nix = {
+      url = "github:nix-community/poetry2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = {
+  outputs = inputs @ {
     self,
     nixpkgs,
     flake-utils,
-    ...
+    poetry2nix,
   }:
-    flake-utils.lib.eachDefaultSystem
-    (
-      system: let
-        pkgs = import nixpkgs {
-          inherit system;
+    flake-utils.lib.eachDefaultSystem (system: let
+      # see https://github.com/nix-community/poetry2nix/tree/master#api for more functions and examples.
+      pkgs = nixpkgs.legacyPackages.${system};
+      poetry2nix = inputs.poetry2nix.lib.mkPoetry2Nix {inherit pkgs;};
+    in {
+      packages = {
+        my-email = poetry2nix.mkPoetryApplication {
+          projectDir = self;
+          overrides =
+            poetry2nix.defaultPoetryOverrides.extend
+            (self: super: {
+              o365 =
+                super.o365.overridePythonAttrs
+                (
+                  old: {
+                    buildInputs = (old.buildInputs or []) ++ [super.setuptools];
+                  }
+                );
+            });
         };
-        python = pkgs.python311;
-        # 'build time' deps
-        buildInputs = with pkgs; [
-          (python.withPackages(ps: with ps; [ # packages not specified in pyproject.toml: these will be available in the venv.
-          ]))
-          poetry
-          pre-commit
-        ];
-        # allow building c extensions
-        env = {
-          LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
-        };
-      in
-        with pkgs; {
-          devShells.default = mkShell {
-            inherit buildInputs;
-            inherit env;
-              shellHook = ''
-              pre-commit install
-              '';
-          };
-        }
-    );
+        default = self.packages.${system}.my-email;
+      };
+
+      devShells.default = pkgs.mkShell {
+        inputsFrom = [self.packages.${system}.my-email];
+        packages = [pkgs.poetry];
+      };
+    });
 }

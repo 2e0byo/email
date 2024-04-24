@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "email"
+name = "my_email"
 version = "0.1.0"
 description = ""
 authors = ["John Maximilian <2e0byo@gmail.com>"]
@@ -9,6 +9,11 @@ python = "^3.10"
 msal = "^1.17.0"
 oauth2 = "^1.9.0"
 google-auth-oauthlib = "^0.5.1"
+cryptography = "41.0.1"
+O365 = "2.0.34"
+
+[tool.poetry.scripts]
+my-email = "my_email.oauth:main"
 
 [tool.poetry.dev-dependencies]
 
