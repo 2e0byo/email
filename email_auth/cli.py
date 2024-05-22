@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 from pathlib import Path
 
-from .email_auth import GmailCredentials, Office365Credentials
 from .config import load_config
 
 

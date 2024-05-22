@@ -15,7 +15,7 @@ toml = "^0.10.2"
 pydantic = "^2.7.1"
 
 [tool.poetry.scripts]
-email-auth = "email_auth.oauth:main"
+email-auth = "email_auth.cli:main"
 
 [tool.poetry.dev-dependencies]
 

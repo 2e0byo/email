@@ -2,7 +2,7 @@ from pathlib import Path
 from toml import load
 
 
-from .email_auth import (
+from .creds import (
     AuthenticatableCredentials,
     Credentials,
     GmailCredentials,
