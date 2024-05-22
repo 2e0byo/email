@@ -22,7 +22,7 @@
       poetry2nix = inputs.poetry2nix.lib.mkPoetry2Nix {inherit pkgs;};
     in {
       packages = {
-        my-email = poetry2nix.mkPoetryApplication {
+        email-auth = poetry2nix.mkPoetryApplication {
           projectDir = self;
           overrides =
             poetry2nix.defaultPoetryOverrides.extend
@@ -36,11 +36,11 @@
                 );
             });
         };
-        default = self.packages.${system}.my-email;
+        default = self.packages.${system}.email-auth;
       };
 
       devShells.default = pkgs.mkShell {
-        inputsFrom = [self.packages.${system}.my-email];
+        inputsFrom = [self.packages.${system}.email-auth];
         packages = [pkgs.poetry];
       };
     });

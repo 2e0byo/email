@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "my_email"
+name = "email-auth"
 version = "0.1.0"
 description = ""
 authors = ["John Maximilian <2e0byo@gmail.com>"]
@@ -15,7 +15,7 @@ toml = "^0.10.2"
 pydantic = "^2.7.1"
 
 [tool.poetry.scripts]
-my-email = "my_email.oauth:main"
+email-auth = "email_auth.oauth:main"
 
 [tool.poetry.dev-dependencies]
 

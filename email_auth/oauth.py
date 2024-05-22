@@ -14,7 +14,7 @@ def main() -> None:
         "--config", type=Path, help="Config file", default=Path("~/.config/email.toml")
     )
     args = parser.parse_args()
-    accounts = load_config(args.config)
+    accounts = load_config(args.config.expanduser())
     for k in args.account:
         account = accounts[k]
         if args.refresh:
