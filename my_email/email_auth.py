@@ -1,4 +1,5 @@
 import ssl
+from typing import Annotated, ClassVar
 import webbrowser
 from abc import ABC, abstractmethod
 from base64 import b64encode
@@ -6,25 +7,27 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from threading import Thread
 from urllib.parse import parse_qs, urlparse
+from pydantic import BaseModel, AfterValidator
 
 import google_auth_oauthlib as gauth
 import msal
 import requests
 from O365 import Account, FileSystemTokenBackend
 
+ResolvedPath = Annotated[Path, AfterValidator(lambda p: p.expanduser().resolve())]
 
-class Credentials(ABC):
+
+class Credentials(ABC, BaseModel):
     """Credentials which can generate a refresh token."""
 
-    def __init__(self, token_file: Path, email: str, user: str = None):
-        self.token_file = token_file
-        self._user = user
-        self.email = email
+    token_file: ResolvedPath
+    email: str
+    username: str | None = None
 
     @property
     def user(self):
         """Get the user or email."""
-        return self._user if self._user else self.email
+        return self.username or self.email
 
     @abstractmethod
     def refresh_token(self) -> str:
@@ -34,8 +37,7 @@ class Credentials(ABC):
     def write_refresh_token(self):
         """Get a new refresh token and write it to disk."""
         token = self.refresh_token()
-        with self.token_file.open("w") as f:
-            f.write(token)
+        self.token_file.write_text(token)
         self.token_file.chmod(0o600)
 
 
@@ -72,10 +74,12 @@ class AuthenticatableCredentials(Credentials):
 class GmailCredentials(AuthenticatableCredentials):
     """OAUTH Credentials for Gmaili."""
 
-    ID = "406964657835-aq8lmia8j95dhl1a2bvharmfk3t1hgqj.apps.googleusercontent.com"
-    SECRET = "kSmqreRr0qwBWJgbf5Y-PjSU"
-    SCOPES = "https://mail.google.com/"
-    TOKEN_URL = "https://www.googleapis.com/oauth2/v3/token"
+    ID: ClassVar[str] = (
+        "406964657835-aq8lmia8j95dhl1a2bvharmfk3t1hgqj.apps.googleusercontent.com"
+    )
+    SECRET: ClassVar[str] = "kSmqreRr0qwBWJgbf5Y-PjSU"
+    SCOPES: ClassVar[str] = "https://mail.google.com/"
+    TOKEN_URL: ClassVar[str] = "https://www.googleapis.com/oauth2/v3/token"
 
     def refresh_token(self) -> str:
         """Get a new refresh token."""
@@ -129,12 +133,14 @@ class WebbrowserTokenMixin:
 class Office365Credentials(AuthenticatableCredentials, WebbrowserTokenMixin):
     """Credentials for Office365 accounts."""
 
-    ID = "9e5f94bc-e8a4-4e73-b8be-63364c29d753"
-    SCOPES = (
+    ID: ClassVar[str] = "9e5f94bc-e8a4-4e73-b8be-63364c29d753"
+    SCOPES: ClassVar[tuple[str, ...]] = (
         "https://outlook.office365.com/IMAP.AccessAsUser.All",
         "https://outlook.office365.com/SMTP.Send",
     )
-    TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+    TOKEN_URL: ClassVar[str] = (
+        "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+    )
 
     def refresh_token(self) -> str:
         """Get a new refresh token."""
@@ -154,8 +160,8 @@ class Office365Credentials(AuthenticatableCredentials, WebbrowserTokenMixin):
 class EWSCredentials(Credentials, WebbrowserTokenMixin):
     """Credentials for EWS accounts, to be used by py-o365."""
 
-    ID = "20460e5d-ce91-49af-a3a5-70b6be7486d1"
-    SCOPES = (
+    ID: ClassVar[str] = "20460e5d-ce91-49af-a3a5-70b6be7486d1"
+    SCOPES: ClassVar[tuple[str, ...]] = (
         "https://graph.microsoft.com/Mail.ReadWrite",
         "https://graph.microsoft.com/User.Read",
         "https://graph.microsoft.com/Mail.Send",

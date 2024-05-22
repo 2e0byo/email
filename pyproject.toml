@@ -11,6 +11,8 @@ oauth2 = "^1.9.0"
 google-auth-oauthlib = "^0.5.1"
 cryptography = "41.0.1"
 O365 = "2.0.34"
+toml = "^0.10.2"
+pydantic = "^2.7.1"
 
 [tool.poetry.scripts]
 my-email = "my_email.oauth:main"
