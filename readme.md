@@ -29,39 +29,109 @@ For the client id/secret we pretend to be thunderbird.
 
 ## Installation
 
+At present this is not on pypi, so you will have to build it yourself:
 ```bash
-pip install -r requirements.txt
+# clone and cd to this repo
+# pipx install poetry or the like
+poetry shell
+poetry install
+email-auth --help
 ```
-Put `email.py` somewhere sensible.  Then create yourself a `oauth.py` following
-the model in `oauth_example.py`.
+
+For system istallations you can build a wheel and then pip install it somewhere:
+
+```bash
+poetry build
+pip install dist/*.whl
+```
+
+*however* with the move to "managed python environments" where you are not
+supposed to `pip install` stuff into your system, you might want to do one of
+the following:
+
+- if you use nix, the flake exports a package you can just install
+- use pipx:
+  ```shell
+  poetry build
+  pipx install dist/*.whl
+  ```
+
+- do the same thing manually: make a venv and install into that, then use the
+  venv's interpreter explicitly:
+  ```shell
+  python -m venv .venv
+  source .venv/bin/activate
+  python -m pip install path/to/built/wheel
+  deactivate
+  ```
+  ```bash
+  # my script which needs email.sh
+  /path/to/venv/python -c "from email_auth.cli import main; main()" --help
+  ```
+- exactly the same thing, but using the poetry venv (run `which python` after
+  `poetry shell`). I prefer not doing this as I tend to break poetry envs by
+  hacking on them: having an explicit installation step helps keep my head
+  clear.
+- dockerise, if you really must
+
 
 ## Initial Setup
-Make sure your `.pass` exists and has the right permissions.  Run `python
-oauth.py USER@ACCOUNT --refresh` for every account defined in `oauth.py`.  This
-will fire up a web browser (run with `BROWSER=/path/to/browser` to change) and
-direct you to your usual company login portal, after which it will extract the
-refresh token and save it to disk.
+Create a config file at the default location (`~/.config/email.toml`) or
+elsewhere, with each account:
+
+```toml
+[accounts.foo]
+token_file = "~/.pass/foo"
+email = "foo@gmail.com"
+type = "gmail"
+
+[accounts.bar]
+token_file = "~/.pass/bar"
+email = "bar@gmail.com"
+type = "gmail"
+```
+
+This is directly validated against the model defined in `creds.py`, dispatching
+on the value of `type` with the alias in `config.py`. At the time of writing the
+possible values are `gmail` or `o365`.
+
+Run `email-auth --refresh USER@ACCOUNT` for every account defined in `oauth.py`.
+This will fire up a web browser (run with `BROWSER=/path/to/browser` to change)
+and direct you to your usual company login portal, after which it will extract
+the refresh token and save it to disk.
 
 You can pass all the accounts in at once, in which case they will be processed
 sequentially.  Warning!  If your browser keeps you logged in---which it probably
 will---and you have multiple accounts from the same provider, this may not do
 what you think.
 
-## Offlineimap (or library usage)
+## Offlineimap
 
 In my `~/.offlineimaprc` I have:
 
 ```python
 [Respository RemoteGmail]
-pythonfile = ~/code/email/oauth.py
+pythonfile = path/to/get_settings.py
 remoteuser = ...
 auth_mechanisms = XOAUTH2
-oauth2_access_token_eval = Gmail1.authentication_token()
+oauth2_access_token_eval = authstr('foo@bar.com')
 ```
 
-and so on.
+and then:
 
-## Emacs (or cli usage)
+```python
+# get_settings.py
+def authstr(account: str) -> str:
+    return run(
+               ["email-auth", account],
+               check=True, capture_output=True, encoding="utf8"
+    ).stdout.strip()
+```
+
+Alternatively if offlineimap runs in the same venv as email-auth you can import
+and work with the object directly.
+
+## Emacs
 
 In my `init.el` I have:
 
@@ -81,9 +151,9 @@ In my `init.el` I have:
 The complete cli:
 
 ```bash
-python oauth.py USER@ACCOUNT # get and print authentication token
-python oauth.py --authstr USER@ACCOUNT # get and print base64 encoded str for xoauth2
-python oauth.py --refresh USER@ACCOUNT USER2@ACCOUNT2 # update refresh token for user.
+email-auth USER@ACCOUNT # get and print authentication token
+email-auth --authstr USER@ACCOUNT # get and print base64 encoded str for xoauth2
+email-auth --refresh USER@ACCOUNT USER2@ACCOUNT2 # update refresh token for user.
 ```
 
 # Credits
