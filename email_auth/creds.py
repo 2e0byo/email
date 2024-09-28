@@ -110,11 +110,11 @@ class WebbrowserTokenMixin:
         root = Path(__file__).parent
         keyf, certf = root / "server.key", root / "server.cert"
         assert keyf.exists() and certf.exists()
-        server.socket = ssl.wrap_socket(
+        context = ssl.SSLContext()
+        context.load_cert_chain(certf, keyf)
+        server.socket = context.wrap_socket(
             server.socket,
-            keyfile=keyf,
-            certfile=certf,
-            server_side=True,
+            server_side=True
         )
         t = Thread(target=server.serve_forever)
         t.start()
